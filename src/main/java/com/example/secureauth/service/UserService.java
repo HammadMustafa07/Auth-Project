@@ -3,8 +3,10 @@ package com.example.secureauth.service;
 import com.example.secureauth.entity.OAuthAccount;
 import com.example.secureauth.entity.OAuthProvider;
 import com.example.secureauth.entity.User;
+import com.example.secureauth.exception.UserProvisioningException;
 import com.example.secureauth.repository.OAuthAccountRepository;
 import com.example.secureauth.repository.UserRepository;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,18 +32,26 @@ public class UserService {
             String profileImage
     ) {
 
-        return oauthAccountRepository
-                .findByProviderAndProviderUserId(
-                        OAuthProvider.GOOGLE,
-                        providerUserId
-                )
-                .map(OAuthAccount::getUser)
-                .orElseGet(() -> createGoogleUser(
-                        providerUserId,
-                        email,
-                        name,
-                        profileImage
-                ));
+        try {
+            return oauthAccountRepository
+                    .findByProviderAndProviderUserId(
+                            OAuthProvider.GOOGLE,
+                            providerUserId
+                    )
+                    .map(OAuthAccount::getUser)
+                    .orElseGet(() -> createGoogleUser(
+                            providerUserId,
+                            email,
+                            name,
+                            profileImage
+                    ));
+
+        } catch (DataAccessException ex) {
+            throw new UserProvisioningException(
+                    "Failed to provision Google User",
+                    ex
+            );
+        }
     }
 
     private User createGoogleUser(

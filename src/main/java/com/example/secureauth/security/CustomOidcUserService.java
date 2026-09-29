@@ -1,13 +1,21 @@
 package com.example.secureauth.security;
 
+import com.example.secureauth.exception.UserProvisioningException;
 import com.example.secureauth.service.UserService;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CustomOidcUserService extends OidcUserService {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(CustomOidcUserService.class);
 
     private final UserService userService;
 
@@ -20,14 +28,47 @@ public class CustomOidcUserService extends OidcUserService {
 
         OidcUser oidcUser = super.loadUser(userRequest);
 
-        userService.findOrCreateGoogleUser(
-                oidcUser.getSubject(),
-                oidcUser.getEmail(),
-                oidcUser.getFullName(),
-                oidcUser.getPicture()
-        );
+        String providerUserId = oidcUser.getSubject();
+        String email = oidcUser.getEmail();
 
-        return oidcUser;
+        if (providerUserId == null || providerUserId.isBlank()) {
+            throw new OAuth2AuthenticationException(
+                    new OAuth2Error("invalid_user_info"),
+                    "Required Google user information is missing"
+            );
+        }
+
+        if (email == null || email.isBlank()) {
+            throw new OAuth2AuthenticationException(
+                    new OAuth2Error("invalid_user_info"),
+                    "Required Google user information is missing"
+            );
+        }
+
+        try {
+
+            userService.findOrCreateGoogleUser(
+                    providerUserId,
+                    email,
+                    oidcUser.getFullName(),
+                    oidcUser.getPicture()
+            );
+
+            return oidcUser;
+
+        } catch (UserProvisioningException ex) {
+
+            log.error(
+                    "Failed to provision Google user",
+                    ex
+            );
+
+            throw new OAuth2AuthenticationException(
+                    new OAuth2Error("server_error"),
+                    "Unable to complete authentication",
+                    ex
+            );
+        }
     }
 }
 
