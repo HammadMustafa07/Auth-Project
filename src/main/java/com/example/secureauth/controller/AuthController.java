@@ -18,7 +18,7 @@ public class AuthController {
         this.currentUserService = currentUserService;
     }
 
-    @GetMapping("/api/me")
+    @GetMapping("/api/auth/me")
     public CurrentUserResponse me(
         @AuthenticationPrincipal OidcUser user
     ) {

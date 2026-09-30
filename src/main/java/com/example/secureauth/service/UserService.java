@@ -24,6 +24,13 @@ public class UserService {
         this.oauthAccountRepository = oauthAccountRepository;
     }
 
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new IllegalStateException("Authenticated user not found")
+                );
+    }
+
     @Transactional
     public User findOrCreateGoogleUser(
             String providerUserId,
