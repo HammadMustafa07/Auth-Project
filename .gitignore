@@ -17,6 +17,7 @@ instructionsforantigravity.md
 
 ### IntelliJ IDEA ###
 .idea
+Frontend
 *.iws
 *.iml
 *.ipr
