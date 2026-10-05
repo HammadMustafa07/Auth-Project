@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CsrfController {
 
     // This lets a JavaScript client obtain the token before making state-changing requests. Spring documents this /csrf pattern for JavaScript applications.
-    @GetMapping("/api/csrf")
+    @GetMapping("/api/auth/csrf")
     public CsrfToken csrf(CsrfToken csrfToken) {
         return csrfToken;
     }

@@ -9,4 +9,8 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
 //    Spring Data JPA provides repository support on top of JPA, so we don't need to manually write the basic CRUD implementation.
+
+    boolean existsByEmail(String email);
+
+
 }

@@ -54,6 +54,21 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ProblemDetail handleUserAlreadyExists(
+            UserAlreadyExistsException ex
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatus(409);
+
+        problem.setTitle("Account already exists");
+        problem.setDetail(
+                "An account already exists for this email."
+        );
+
+        return problem;
+    }
+
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpectedException(
             Exception ex
@@ -74,6 +89,8 @@ public class GlobalExceptionHandler {
         return problem;
     }
 }
+
+
 
 //Spring's ProblemDetail is specifically designed for RFC 9457 HTTP API error responses.
 //So instead of:
