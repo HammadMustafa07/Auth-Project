@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
+
 @Service
 public class LocalAuthService {
 
@@ -34,6 +36,8 @@ public class LocalAuthService {
             String password
     ) {
 
+        email = email.trim().toLowerCase(Locale.ROOT);
+
         if (userRepository.existsByEmail(email)) {
             throw new UserAlreadyExistsException(
                     "An account already exists for this email"
@@ -42,7 +46,7 @@ public class LocalAuthService {
 
         User user = new User();
 
-        user.setName(name);
+        user.setName(name.trim());
         user.setEmail(email);
 
         User savedUser = userRepository.save(user);

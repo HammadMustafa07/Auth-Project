@@ -7,6 +7,7 @@ import com.example.secureauth.service.CurrentUserService;
 import com.example.secureauth.service.LocalAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +20,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Locale;
 
 
 @RestController
@@ -55,7 +58,7 @@ public class AuthController {
     @PostMapping("/api/auth/register")
     @ResponseStatus(HttpStatus.CREATED)
     public void register(
-            @RequestBody RegisterRequest request
+           @Valid @RequestBody RegisterRequest request
     ) {
         localAuthService.register(
                 request.name(),
@@ -66,14 +69,18 @@ public class AuthController {
 
     @PostMapping("/api/auth/login")
     public CurrentUserResponse login(
-            @RequestBody LoginRequest request,
+            @Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     ) {
 
+        String email = request.email()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
         Authentication authenticationRequest =
                 UsernamePasswordAuthenticationToken.unauthenticated(
-                        request.email(),
+                        email,
                         request.password()
                 );
 
