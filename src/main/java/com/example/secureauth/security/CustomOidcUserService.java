@@ -45,6 +45,15 @@ public class CustomOidcUserService extends OidcUserService {
             );
         }
 
+        Boolean emailVerified = oidcUser.getEmailVerified();
+
+        if (!Boolean.TRUE.equals(emailVerified)) {
+            throw new OAuth2AuthenticationException(
+                    new OAuth2Error("unverified_email"),
+                    "Google email is not verified"
+            );
+        }
+
         try {
 
             userService.findOrCreateGoogleUser(

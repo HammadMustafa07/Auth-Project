@@ -10,6 +10,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
+import java.util.Optional;
+
 @Service
 public class UserService {
 
@@ -38,38 +41,43 @@ public class UserService {
             String name,
             String profileImage
     ) {
+        email = email.trim().toLowerCase(Locale.ROOT);
 
-        try {
-            return oauthAccountRepository
-                    .findByProviderAndProviderUserId(
-                            OAuthProvider.GOOGLE,
-                            providerUserId
-                    )
-                    .map(OAuthAccount::getUser)
-                    .orElseGet(() -> createGoogleUser(
-                            providerUserId,
-                            email,
-                            name,
-                            profileImage
-                    ));
+        Optional<OAuthAccount> existingOAuthAccount =
+                oauthAccountRepository.findByProviderAndProviderUserId(
+                        OAuthProvider.GOOGLE,
+                        providerUserId
+                );
 
-        } catch (DataAccessException ex) {
-            throw new UserProvisioningException(
-                    "Failed to provision Google User",
-                    ex
-            );
+        if (existingOAuthAccount.isPresent()) {
+            return existingOAuthAccount.get().getUser();
         }
-    }
 
-    private User createGoogleUser(
-            String providerUserId,
-            String email,
-            String name,
-            String profileImage
-    ) {
+        Optional<User> existingUser =
+                userRepository.findByEmail(email);
+
+        if (existingUser.isPresent()) {
+
+            User user = existingUser.get();
+
+            if (!user.isEnabled()) {
+                throw new UserProvisioningException(
+                        "User account is disabled",
+                        null
+                );
+            }
+
+            OAuthAccount oauthAccount = new OAuthAccount();
+            oauthAccount.setProvider(OAuthProvider.GOOGLE);
+            oauthAccount.setProviderUserId(providerUserId);
+            oauthAccount.setUser(user);
+
+            oauthAccountRepository.save(oauthAccount);
+
+            return user;
+        }
 
         User user = new User();
-
         user.setEmail(email);
         user.setName(name);
         user.setProfileImage(profileImage);
@@ -77,7 +85,6 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         OAuthAccount oauthAccount = new OAuthAccount();
-
         oauthAccount.setProvider(OAuthProvider.GOOGLE);
         oauthAccount.setProviderUserId(providerUserId);
         oauthAccount.setUser(savedUser);
@@ -86,4 +93,40 @@ public class UserService {
 
         return savedUser;
     }
+
+//    Google
+// ↓
+//    No OAuthAccount=
+// ↓
+//    No User with email
+// ↓
+//    Create User
+// ↓
+//    Create OAuthAccount
+
+//    private User createGoogleUser(
+//            String providerUserId,
+//            String email,
+//            String name,
+//            String profileImage
+//    ) {
+//
+//        User user = new User();
+//
+//        user.setEmail(email);
+//        user.setName(name);
+//        user.setProfileImage(profileImage);
+//
+//        User savedUser = userRepository.save(user);
+//
+//        OAuthAccount oauthAccount = new OAuthAccount();
+//
+//        oauthAccount.setProvider(OAuthProvider.GOOGLE);
+//        oauthAccount.setProviderUserId(providerUserId);
+//        oauthAccount.setUser(savedUser);
+//
+//        oauthAccountRepository.save(oauthAccount);
+//
+//        return savedUser;
+//    }
 }
