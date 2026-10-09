@@ -4,11 +4,13 @@ import com.example.secureauth.dto.CurrentUserResponse;
 import com.example.secureauth.dto.LoginRequest;
 import com.example.secureauth.dto.RegisterRequest;
 import com.example.secureauth.service.CurrentUserService;
+import com.example.secureauth.service.EmailVerificationService;
 import com.example.secureauth.service.LocalAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,16 +30,34 @@ import java.util.Locale;
 public class AuthController {
     private final CurrentUserService currentUserService;
     private final LocalAuthService localAuthService;
+    private final EmailVerificationService emailVerificationService;
     private final AuthenticationManager authenticationManager;
     private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
     private final SecurityContextRepository securityContextRepository;
 
-    public AuthController(CurrentUserService currentUserService, LocalAuthService localAuthService, AuthenticationManager authenticationManager, SessionAuthenticationStrategy sessionAuthenticationStrategy, SecurityContextRepository securityContextRepository) {
+    public AuthController(
+            CurrentUserService currentUserService,
+            LocalAuthService localAuthService,
+            EmailVerificationService emailVerificationService,
+            AuthenticationManager authenticationManager,
+            SessionAuthenticationStrategy sessionAuthenticationStrategy,
+            SecurityContextRepository securityContextRepository
+    ) {
         this.currentUserService = currentUserService;
         this.localAuthService = localAuthService;
+        this.emailVerificationService = emailVerificationService;
         this.authenticationManager = authenticationManager;
         this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
         this.securityContextRepository = securityContextRepository;
+    }
+
+    @GetMapping("/api/auth/verify-email")
+    public ResponseEntity<Void> verifyEmail(
+            @RequestParam String token
+    ) {
+        emailVerificationService.verify(token);
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/api/auth/me")

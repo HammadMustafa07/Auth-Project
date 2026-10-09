@@ -10,6 +10,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -67,6 +68,11 @@ public class UserService {
                 );
             }
 
+            if (user.getEmailVerifiedAt() == null) {
+                user.setEmailVerifiedAt(Instant.now());
+                userRepository.save(user);
+            }
+
             OAuthAccount oauthAccount = new OAuthAccount();
             oauthAccount.setProvider(OAuthProvider.GOOGLE);
             oauthAccount.setProviderUserId(providerUserId);
@@ -81,6 +87,7 @@ public class UserService {
         user.setEmail(email);
         user.setName(name);
         user.setProfileImage(profileImage);
+        user.setEmailVerifiedAt(Instant.now());
 
         User savedUser = userRepository.save(user);
 

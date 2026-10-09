@@ -43,6 +43,11 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+
+
+    @Column(name = "email_verified_at")
+    private Instant emailVerifiedAt;
+
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
@@ -86,6 +91,14 @@ public class User {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Instant getEmailVerifiedAt() {
+        return emailVerifiedAt;
+    }
+
+    public void setEmailVerifiedAt(Instant emailVerifiedAt) {
+        this.emailVerifiedAt = emailVerifiedAt;
     }
 
     public void setEmail(String email) {

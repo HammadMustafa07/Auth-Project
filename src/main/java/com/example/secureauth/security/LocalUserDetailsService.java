@@ -45,7 +45,10 @@ public class LocalUserDetailsService
         return org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
                 .password(localAccount.getPasswordHash())
                 .roles(user.getRole().name())
-                .disabled(!user.isEnabled())
+                .disabled(
+                        !user.isEnabled()
+                                || user.getEmailVerifiedAt() == null
+                )
                 .build();
     }
 }

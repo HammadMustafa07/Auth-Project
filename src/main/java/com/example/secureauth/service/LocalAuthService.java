@@ -18,15 +18,18 @@ public class LocalAuthService {
     private final UserRepository userRepository;
     private final LocalAccountRepository localAccountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
 
     public LocalAuthService(
             UserRepository userRepository,
             LocalAccountRepository localAccountRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            EmailVerificationService emailVerificationService
     ) {
         this.userRepository = userRepository;
         this.localAccountRepository = localAccountRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailVerificationService = emailVerificationService;
     }
 
     @Transactional
@@ -59,5 +62,9 @@ public class LocalAuthService {
         );
 
         localAccountRepository.save(localAccount);
+
+        emailVerificationService.createVerificationToken(
+                savedUser
+        );
     }
 }
