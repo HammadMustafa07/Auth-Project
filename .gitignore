@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 thingstoremember.md
 instructionsforantigravity.md
+PROJECT_DOCUMENTATION.md
 
 ### STS ###
 .apt_generated
